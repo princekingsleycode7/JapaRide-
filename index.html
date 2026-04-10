@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JapaRide — Ride Smart. Earn Smarter.</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #070a0e;
+    --surface: #0d1117;
+    --card: #111820;
+    --border: rgba(0,255,140,0.12);
+    --green: #00ff8c;
+    --green-dim: #00cc70;
+    --green-glow: rgba(0,255,140,0.15);
+    --white: #f0f6ff;
+    --muted: #6b7a8d;
+    --accent: #ff6b35;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 12px; height: 12px;
+    background: var(--green);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s;
+    mix-blend-mode: difference;
+  }
+  .cursor-trail {
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--green);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.18s ease;
+    opacity: 0.5;
+  }
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 5%;
+    backdrop-filter: blur(20px);
+    background: rgba(7,10,14,0.85);
+    border-bottom: 1px solid var(--border);
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: -0.03em;
+    color: var(--white);
+  }
+  .logo span { color: var(--green); }
+
+  nav ul {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+  nav ul a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.2s;
+    letter-spacing: 0.02em;
+  }
+  nav ul a:hover { color: var(--green); }
+
+  .nav-cta {
+    background: var(--green);
+    color: var(--bg) !important;
+    padding: 0.5rem 1.3rem;
+    border-radius: 100px;
+    font-weight: 700 !important;
+    transition: transform 0.2s, box-shadow 0.2s !important;
+  }
+  .nav-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 24px var(--green-glow) !important;
+    color: var(--bg) !important;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8rem 5% 5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 60% 40%, rgba(0,255,140,0.06) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 40% at 20% 80%, rgba(255,107,53,0.04) 0%, transparent 60%);
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,140,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,140,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(0,255,140,0.08);
+    border: 1px solid var(--border);
+    color: var(--green);
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.4rem 1rem;
+    border-radius: 100px;
+    margin-bottom: 2rem;
+    width: fit-content;
+    animation: fadeUp 0.8s 0.2s ease both;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .hero-tag::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3rem, 8vw, 7rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    animation: fadeUp 0.8s 0.35s ease both;
+    max-width: 900px;
+  }
+  .hero h1 .line-green { color: var(--green); }
+  .hero h1 .line-outline {
+    -webkit-text-stroke: 1.5px rgba(240,246,255,0.3);
+    color: transparent;
+  }
+
+  .hero-sub {
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 520px;
+    margin-top: 1.8rem;
+    line-height: 1.7;
+    animation: fadeUp 0.8s 0.5s ease both;
+    font-weight: 300;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    flex-wrap: wrap;
+    animation: fadeUp 0.8s 0.65s ease both;
+  }
+
+  .btn-primary {
+    background: var(--green);
+    color: var(--bg);
+    padding: 0.9rem 2.2rem;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+    cursor: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0,255,140,0.3);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--white);
+    padding: 0.9rem 2.2rem;
+    border-radius: 100px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    text-decoration: none;
+    border: 1px solid rgba(240,246,255,0.15);
+    transition: border-color 0.2s, color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-ghost:hover {
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 3rem;
+    margin-top: 4rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--border);
+    animation: fadeUp 0.8s 0.8s ease both;
+    flex-wrap: wrap;
+  }
+  .stat-item {}
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--green);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 0.3rem;
+  }
+
+  .hero-bike {
+    position: absolute;
+    right: -2%;
+    bottom: 0;
+    width: 55%;
+    max-width: 750px;
+    opacity: 0.12;
+    pointer-events: none;
+    animation: floatBike 6s ease-in-out infinite, fadeIn 1.2s 0.5s ease both;
+    filter: drop-shadow(0 0 80px rgba(0,255,140,0.2));
+  }
+
+  /* SCROLLING TICKER */
+  .ticker {
+    background: var(--green);
+    padding: 0.75rem 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .ticker-inner {
+    display: inline-flex;
+    animation: ticker 20s linear infinite;
+  }
+  .ticker-item {
+    color: var(--bg);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0 2.5rem;
+  }
+  .ticker-dot {
+    color: rgba(7,10,14,0.4);
+    padding: 0 0.5rem;
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 7rem 5%;
+    position: relative;
+  }
+
+  .section-tag {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--green);
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    max-width: 700px;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-body {
+    color: var(--muted);
+    max-width: 560px;
+    font-size: 1.05rem;
+    line-height: 1.75;
+    font-weight: 300;
+  }
+
+  /* HOW IT WORKS */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5px;
+    margin-top: 4rem;
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--border);
+  }
+
+  .step {
+    background: var(--card);
+    padding: 2.5rem;
+    transition: background 0.3s;
+    position: relative;
+  }
+  .step:hover { background: #141e28; }
+
+  .step-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: rgba(0,255,140,0.1);
+    line-height: 1;
+    margin-bottom: 1rem;
+    letter-spacing: -0.05em;
+  }
+
+  .step h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--white);
+  }
+  .step p { color: var(--muted); font-size: 0.9rem; line-height: 1.65; }
+
+  /* INVEST SECTION */
+  .invest-section {
+    background: var(--surface);
+  }
+
+  .invest-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 4rem;
+  }
+
+  .plan-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .plan-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--green);
+  }
+  .plan-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--green);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .plan-card:hover::before { opacity: 1; }
+
+  .plan-badge {
+    display: inline-block;
+    background: rgba(0,255,140,0.1);
+    color: var(--green);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.3rem 0.8rem;
+    border-radius: 100px;
+    margin-bottom: 1.5rem;
+  }
+
+  .plan-price {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  .plan-price span {
+    font-size: 1rem;
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  .plan-return {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+  .plan-return strong { color: var(--green); }
+
+  .plan-rows { border-top: 1px solid var(--border); padding-top: 1.5rem; }
+  .plan-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.65rem 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .plan-row .label { color: var(--muted); }
+  .plan-row .value { font-weight: 600; color: var(--white); }
+  .plan-row .value.green { color: var(--green); }
+
+  /* FEATURED PLAN */
+  .plan-card.featured {
+    border-color: rgba(0,255,140,0.4);
+    background: linear-gradient(135deg, #0d1a14 0%, var(--card) 100%);
+  }
+  .plan-card.featured::after {
+    content: 'MOST POPULAR';
+    position: absolute;
+    top: 1.5rem; right: 1.5rem;
+    background: var(--green);
+    color: var(--bg);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 0.25rem 0.7rem;
+    border-radius: 100px;
+  }
+
+  /* WHY JAPARIDE */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 4rem;
+  }
+
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .feature-card:hover {
+    border-color: rgba(0,255,140,0.3);
+    transform: translateY(-4px);
+  }
+
+  .feature-icon {
+    width: 48px; height: 48px;
+    background: rgba(0,255,140,0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .feature-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+  }
+  .feature-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.65; }
+
+  /* SIGNUP SECTION */
+  .signup-section {
+    background: var(--surface);
+  }
+
+  .signup-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-top: 4rem;
+  }
+
+  .signup-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2.5rem;
+  }
+
+  .signup-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+  }
+  .signup-card .sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+
+  .cta-card-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin-top: 1rem;
+  }
+
+  .cta-point {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 1rem 1.2rem;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .cta-point-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .cta-point-text {}
+  .cta-point-text strong { display: block; font-size: 0.92rem; font-weight: 600; margin-bottom: 0.2rem; }
+  .cta-point-text span { font-size: 0.83rem; color: var(--muted); line-height: 1.5; }
+
+  .cta-big-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 1.1rem 1.5rem;
+    border-radius: 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-top: 0.5rem;
+    border: none;
+  }
+  .cta-big-btn .arr { font-size: 1.2rem; transition: transform 0.2s; }
+  .cta-big-btn:hover .arr { transform: translateX(5px); }
+
+  .cta-big-btn.green {
+    background: var(--green);
+    color: var(--bg);
+  }
+  .cta-big-btn.green:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0,255,140,0.3);
+  }
+
+  .cta-big-btn.outline {
+    background: transparent;
+    color: var(--white);
+    border: 1.5px solid rgba(0,255,140,0.3);
+  }
+  .cta-big-btn.outline:hover {
+    transform: translateY(-3px);
+    border-color: var(--green);
+    color: var(--green);
+    box-shadow: 0 8px 28px rgba(0,255,140,0.1);
+  }
+
+  .investor-card { border-color: rgba(0,255,140,0.25); }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+
+  .footer-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    letter-spacing: -0.03em;
+  }
+  .footer-logo span { color: var(--green); }
+
+  .footer-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+  .footer-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--green); }
+
+  .footer-copy {
+    color: var(--muted);
+    font-size: 0.8rem;
+    width: 100%;
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    margin-top: 1rem;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 0.12; }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.7); }
+  }
+  @keyframes floatBike {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-18px); }
+  }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Counter animation */
+  .count-up { display: inline-block; }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    nav ul { display: none; }
+    .hero h1 { font-size: clamp(2.5rem, 10vw, 4rem); }
+    .hero-bike { display: none; }
+    .invest-grid, .signup-grid { grid-template-columns: 1fr; }
+    .hero-stats { gap: 2rem; }
+    footer { flex-direction: column; text-align: center; }
+    .footer-links { justify-content: center; flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Japa<span>Ride</span></div>
+  <ul>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#invest">Invest</a></li>
+    <li><a href="#why">Why Us</a></li>
+    <li><a href="#signup" class="nav-cta">Get Started</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+
+  <div style="position:relative;z-index:2;">
+    <div class="hero-tag">Now Operating at FUTO, Owerri</div>
+    <h1>
+      Ride Smart.<br>
+      <span class="line-green">Earn</span> Smarter.<br>
+      <span class="line-outline">Invest Better.</span>
+    </h1>
+    <p class="hero-sub">
+      JapaRide is Owerri's first managed electric motorcycle platform. Students ride. Drivers earn. Investors double their money in 12 months.
+    </p>
+    <div class="hero-actions">
+      <a href="#invest" class="btn-primary">Invest Now →</a>
+      <a href="#signup" class="btn-ghost">Book a Ride</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-num">₦<span class="count-up" data-target="3">0</span>M</div>
+        <div class="stat-label">Per Bike Return</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num"><span class="count-up" data-target="100">0</span>%</div>
+        <div class="stat-label">ROI in 12 Months</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num"><span class="count-up" data-target="10">0</span>+</div>
+        <div class="stat-label">Bikes — Pilot Fleet</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num"><span class="count-up" data-target="15">0</span>K+</div>
+        <div class="stat-label">FUTO Students</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decorative bike SVG -->
+  <svg class="hero-bike" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="150" cy="280" r="100" stroke="#00ff8c" stroke-width="3"/>
+    <circle cx="450" cy="280" r="100" stroke="#00ff8c" stroke-width="3"/>
+    <circle cx="150" cy="280" r="20" fill="#00ff8c" opacity="0.3"/>
+    <circle cx="450" cy="280" r="20" fill="#00ff8c" opacity="0.3"/>
+    <path d="M150 280 L280 140 L380 180 L450 280" stroke="#00ff8c" stroke-width="4" stroke-linecap="round"/>
+    <path d="M280 140 L310 100 L360 100" stroke="#00ff8c" stroke-width="3" stroke-linecap="round"/>
+    <path d="M380 180 L420 120 L460 120" stroke="#00ff8c" stroke-width="3" stroke-linecap="round"/>
+    <path d="M240 280 L280 140" stroke="#00ff8c" stroke-width="3"/>
+    <ellipse cx="340" cy="110" rx="30" ry="15" stroke="#00ff8c" stroke-width="2" opacity="0.6"/>
+    <line x1="0" y1="380" x2="600" y2="380" stroke="#00ff8c" stroke-width="1" opacity="0.3"/>
+    <line x1="50" y1="380" x2="150" y2="280" stroke="#00ff8c" stroke-width="1" opacity="0.15" stroke-dasharray="4"/>
+    <line x1="350" y1="380" x2="450" y2="280" stroke="#00ff8c" stroke-width="1" opacity="0.15" stroke-dasharray="4"/>
+  </svg>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="ticker-item">Asset-Backed Investment</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">100% ROI in 12 Months</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Weekly Payments</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">GPS-Tracked Fleet</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">FUTO Campus Operations</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Driver Ownership Program</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Battery Swap Technology</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Asset-Backed Investment</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">100% ROI in 12 Months</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Weekly Payments</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">GPS-Tracked Fleet</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">FUTO Campus Operations</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Driver Ownership Program</span><span class="ticker-dot">◆</span>
+    <span class="ticker-item">Battery Swap Technology</span><span class="ticker-dot">◆</span>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-tag reveal">The Process</div>
+  <h2 class="section-title reveal">How JapaRide works for everyone</h2>
+  <p class="section-body reveal">Three groups. One platform. Everybody wins.</p>
+
+  <div class="steps reveal">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>Investor Funds a Bike</h3>
+      <p>You pay the full cost of one electric motorcycle — ₦1,500,000. The bike is tagged to your investment exclusively. No pooling, no ambiguity.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>JapaRide Deploys & Manages</h3>
+      <p>We assign a vetted, employed driver. We handle all operations — maintenance, battery swaps, target enforcement, and reporting. You do nothing.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>Driver Earns & Rides</h3>
+      <p>Drivers operate daily across the FUTO campus and environs, collecting fares and working toward a target of ₦50,000 weekly — and ultimately, owning their bike.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <h3>Investor Gets Paid Weekly</h3>
+      <p>₦57,692 every week, from week one. Capital fully returned by Month 6. Full 100% profit paid by Month 12. Total payout: ₦3,000,000.</p>
+    </div>
+  </div>
+</section>
+
+<!-- INVEST -->
+<section id="invest" class="invest-section">
+  <div class="section-tag reveal">Investment Plans</div>
+  <h2 class="section-title reveal">One plan. One outcome. Your money doubles.</h2>
+  <p class="section-body reveal">We keep it simple. Fund a bike, receive weekly payments, walk away with 100% profit in 12 months. No equity dilution. No lock-ins. No guesswork.</p>
+
+  <div class="invest-grid reveal">
+    <div class="plan-card featured">
+      <div class="plan-badge">Fast ROI Plan</div>
+      <div class="plan-price">₦1.5M <span>per bike</span></div>
+      <div class="plan-return">You receive <strong>₦3,000,000</strong> total over 12 months</div>
+      <div class="plan-rows">
+        <div class="plan-row">
+          <span class="label">Weekly Payment</span>
+          <span class="value green">₦57,692</span>
+        </div>
+        <div class="plan-row">
+          <span class="label">Capital Returned By</span>
+          <span class="value">Month 6</span>
+        </div>
+        <div class="plan-row">
+          <span class="label">Full ROI By</span>
+          <span class="value">Month 12</span>
+        </div>
+        <div class="plan-row">
+          <span class="label">Net Profit</span>
+          <span class="value green">₦1,500,000</span>
+        </div>
+        <div class="plan-row">
+          <span class="label">ROI</span>
+          <span class="value green">100%</span>
+        </div>
+        <div class="plan-row">
+          <span class="label">Asset Tracking</span>
+          <span class="value">GPS — Live</span>
+        </div>
+        <div class="plan-row">
+          <span class="label">Positions Available</span>
+          <span class="value">10 bikes only</span>
+        </div>
+      </div>
+      <br>
+      <a href="#signup" class="btn-primary" style="width:100%;justify-content:center;">Claim a Position →</a>
+    </div>
+
+    <div class="plan-card">
+      <div class="plan-badge" style="background:rgba(255,107,53,0.1);color:var(--accent)">How It's Protected</div>
+      <h3 style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:1rem;">Your capital. Your bike. Our accountability.</h3>
+      <p style="color:var(--muted);font-size:0.9rem;line-height:1.8;margin-bottom:1.5rem;">Every investment is backed by a physical, registered electric motorcycle — tagged to your name. Our GPS system tracks location and activity in real time. Drivers are employees with structured targets, not freelancers. And our battery swap infrastructure ensures every driver comes through our facility daily — giving us full operational visibility.</p>
+      <div style="display:flex;flex-direction:column;gap:0.75rem;">
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <span style="color:var(--green);font-size:1.2rem;">⚡</span>
+          <span style="font-size:0.9rem;color:var(--muted);">Battery swap stations — daily driver accountability</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <span style="color:var(--green);font-size:1.2rem;">📍</span>
+          <span style="font-size:0.9rem;color:var(--muted);">Live GPS tracking on every bike</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <span style="color:var(--green);font-size:1.2rem;">📋</span>
+          <span style="font-size:0.9rem;color:var(--muted);">Signed Managed Asset Agreement per investor</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <span style="color:var(--green);font-size:1.2rem;">📱</span>
+          <span style="font-size:0.9rem;color:var(--muted);">Weekly earnings reports to investor</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <span style="color:var(--green);font-size:1.2rem;">🏛️</span>
+          <span style="font-size:0.9rem;color:var(--muted);">FUTO campus-approved operations</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY JAPARIDE -->
+<section id="why">
+  <div class="section-tag reveal">The Advantage</div>
+  <h2 class="section-title reveal">Built different. On purpose.</h2>
+  <p class="section-body reveal">Every piece of JapaRide is designed to protect your investment and scale our fleet.</p>
+
+  <div class="features reveal">
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Paid Battery Swap</h3>
+      <p>Drivers pay ₦1,000 per swap at our station — twice daily. This creates a second revenue stream and forces daily operational check-ins with every driver on the fleet.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🏍️</div>
+      <h3>Driver Ownership Pathway</h3>
+      <p>After 18 months of consistent target delivery — 6 months beyond your full ROI exit — drivers earn ownership of their bike. Maximum loyalty. Maximum performance.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📍</div>
+      <h3>GPS-Tracked Assets</h3>
+      <p>Every bike carries a live GPS tracker. Location, activity, and movement patterns are visible to the company at all times. No blind spots in our fleet management.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎓</div>
+      <h3>Campus-First Strategy</h3>
+      <p>FUTO hosts 15,000+ students on a large campus. Captive audience, consistent daily demand, and university authority clearance already secured.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💚</div>
+      <h3>Zero Emissions</h3>
+      <p>Electric motorcycles eliminate fuel costs entirely. Cleaner, quieter, and accepted in environments where combustion engines are restricted — a long-term edge.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Tech-Driven Operations</h3>
+      <p>Built by a software developer. Every operational layer — from booking to payments to investor reporting — runs on custom technology, not spreadsheets and guesswork.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SIGNUP -->
+<section id="signup" class="signup-section">
+  <div class="section-tag reveal">Join JapaRide</div>
+  <h2 class="section-title reveal">Ready to ride or ready to earn?</h2>
+  <p class="section-body reveal">Whether you're a student looking for a ride or an investor looking for returns — your next step starts here.</p>
+
+  <div class="signup-grid reveal">
+    <div class="signup-card">
+      <h3>🏍️ Book a Ride</h3>
+      <p class="sub">Students and staff at FUTO — get moving with JapaRide on campus.</p>
+      <div class="cta-card-inner">
+        <div class="cta-point">
+          <div class="cta-point-icon">📍</div>
+          <div class="cta-point-text">
+            <strong>Campus-Wide Coverage</strong>
+            <span>Ride between hostels, faculties, admin — anywhere on FUTO campus at affordable flat rates.</span>
+          </div>
+        </div>
+        <div class="cta-point">
+          <div class="cta-point-icon">⚡</div>
+          <div class="cta-point-text">
+            <strong>Electric. Fast. Clean.</strong>
+            <span>No fuel smell, no loud exhaust. A smooth, quiet ride every time.</span>
+          </div>
+        </div>
+        <div class="cta-point">
+          <div class="cta-point-icon">💳</div>
+          <div class="cta-point-text">
+            <strong>Easy Payment</strong>
+            <span>Pay per ride via Paystack. No cash required. Track your rides in the app.</span>
+          </div>
+        </div>
+      </div>
+      <a href="tel:+2340000000000" class="cta-big-btn green" style="margin-top:1.5rem;">
+        <span>Book a Ride Now</span>
+        <span class="arr">→</span>
+      </a>
+      <a href="#" class="cta-big-btn outline">
+        <span>Download the App</span>
+        <span class="arr">↓</span>
+      </a>
+    </div>
+
+    <div class="signup-card investor-card">
+      <h3>💰 Become an Investor</h3>
+      <p class="sub">Fund a bike. Earn ₦57,692 weekly. Walk away with ₦3,000,000 in 12 months.</p>
+      <div class="cta-card-inner">
+        <div class="cta-point">
+          <div class="cta-point-icon">🔐</div>
+          <div class="cta-point-text">
+            <strong>Asset-Backed. Not a Scheme.</strong>
+            <span>Your ₦1.5M funds a real, physical, GPS-tracked electric motorcycle assigned to you alone.</span>
+          </div>
+        </div>
+        <div class="cta-point">
+          <div class="cta-point-icon">📅</div>
+          <div class="cta-point-text">
+            <strong>Weekly Payments from Day 1</strong>
+            <span>₦57,692 every week. Capital back by Month 6. Full 100% profit by Month 12.</span>
+          </div>
+        </div>
+        <div class="cta-point">
+          <div class="cta-point-icon">📊</div>
+          <div class="cta-point-text">
+            <strong>View the Full Pitch</strong>
+            <span>See the complete investor deck — financials, structure, risk disclosures, and the team.</span>
+          </div>
+        </div>
+      </div>
+      <a href="japaride-pitch.html" class="cta-big-btn green" style="margin-top:1.5rem;">
+        <span>View Investor Pitch Deck</span>
+        <span class="arr">→</span>
+      </a>
+      <a href="tel:+2340000000000" class="cta-big-btn outline">
+        <span>Speak to the Founder</span>
+        <span class="arr">↗</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Japa<span>Ride</span></div>
+  <ul class="footer-links">
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#invest">Invest</a></li>
+    <li><a href="#why">Why Us</a></li>
+    <li><a href="#signup">Sign Up</a></li>
+  </ul>
+  <div class="footer-copy">
+    © 2025 JapaRide Mobility. Founded by Prince Chukwuebuka Chukwuemeka. Operating at FUTO, Owerri, Imo State, Nigeria.<br>
+    <span style="color:rgba(107,122,141,0.5);font-size:0.75rem;margin-top:0.3rem;display:block;">Investment returns are based on operational projections. Please read the Managed Asset Agreement before committing capital.</span>
+  </div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const trail = document.getElementById('cursorTrail');
+  let mx = 0, my = 0, tx = 0, ty = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx - 6 + 'px';
+    cursor.style.top = my - 6 + 'px';
+  });
+
+  setInterval(() => {
+    tx += (mx - tx) * 0.15;
+    ty += (my - ty) * 0.15;
+    trail.style.left = tx - 18 + 'px';
+    trail.style.top = ty - 18 + 'px';
+  }, 16);
+
+  document.querySelectorAll('a, button, input, select').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.style.transform = 'scale(2.5)');
+    el.addEventListener('mouseleave', () => cursor.style.transform = 'scale(1)');
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Counter animation
+  const counters = document.querySelectorAll('.count-up');
+  const counterObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const target = parseInt(el.dataset.target);
+        let current = 0;
+        const increment = target / 50;
+        const timer = setInterval(() => {
+          current += increment;
+          if (current >= target) { el.textContent = target; clearInterval(timer); }
+          else el.textContent = Math.floor(current);
+        }, 30);
+        counterObserver.unobserve(el);
+      }
+    });
+  }, { threshold: 0.5 });
+  counters.forEach(el => counterObserver.observe(el));
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+</body>
+</html>
